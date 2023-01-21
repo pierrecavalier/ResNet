@@ -1,4 +1,4 @@
-import torchs
+import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -251,7 +251,7 @@ def train_model():
                 correct += (predicted_class ==
                             labels_test).float().sum().item()
 
-        test_accuracy = correct / tet_samples_num
+        test_accuracy = correct / test_samples_num
         print('Test accuracy: {}'.format(test_accuracy))
 
         string = str(test_accuracy) + ", "
