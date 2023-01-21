@@ -1,25 +1,29 @@
 import torch
-from torch import nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-from torchvision import datasets
-from torchvision.transforms import ToTensor, Lambda
+import torchvision
+import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 import numpy as np
+import torch.nn as nn
+import torch.nn.functional as F
 
-training_data = datasets.FashionMNIST(
-    root="data",
-    train=True,
-    download=True,
-    transform=ToTensor()
-)
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-test_data = datasets.FashionMNIST(
-    root="data",
-    train=False,
-    download=True,
-    transform=ToTensor()
-)
+batch_size = 4
+
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                        download=True, transform=transform)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                          shuffle=True, num_workers=2)
+
+testset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                       download=True, transform=transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
+                                         shuffle=False, num_workers=2)
+
+classes = ('plane', 'car', 'bird', 'cat',
+           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 
 def train_loop(dataloader, model, loss_fn, optimizer, prin=False):
@@ -57,80 +61,58 @@ def test_loop(dataloader, model, loss_fn):
     return 100*(1-correct)
 
 
-class RSNeuralNetwork(nn.Module):
+class Net(nn.Module):
     def __init__(self):
-        super(RSNeuralNetwork, self).__init__()
-        # self.flatten = nn.Flatten() # Flatten inputs
+        super(Net, self).__init__()
 
-        self.start = self.layer(1, 32, 64)
-
-        self.layer1 = self.layer(64, 64, 64)
-        self.layer2 = self.layer(64, 64, 64)
-        self.layer3 = self.layer(64, 64, 64)
-
-        self.output = self.output_stack(28)
-
-    def layer(self, in_, between, out):
-        return nn.Sequential(
+        self.conv_stack = nn.Sequential(
             nn.Conv2d(
-                in_channels=in_,
-                out_channels=between,
+                in_channels=3,
+                out_channels=16,
                 kernel_size=5,
                 stride=1,
                 padding=2,
             ),
             nn.ReLU(),
             nn.Conv2d(
-                in_channels=between,
-                out_channels=out,
+                in_channels=16,
+                out_channels=8,
                 kernel_size=5,
                 stride=1,
                 padding=2, ),
+            nn.ReLU(),
+            nn.MaxPool2d(8)
+
         )
 
-    def output_stack(self, size):
-        return nn.Sequential(
-            nn.Linear(64 * size * size, 10)
+        self.output_stack = nn.Sequential(
+            nn.LazyLinear(10)
         )
 
     def forward(self, x):
         #x = self.flatten(x)
 
-        logits = self.start(x)
-        logits = self.layer1(logits)
-        logits = self.layer2(logits)
-        logits = self.layer3(logits)
-
+        logits = self.conv_stack(x)
         # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
         logits = logits.view(logits.size(0), -1)
-        logits = self.output(logits)
+        logits = self.output_stack(logits)
         return logits
 
 
-model = RSNeuralNetwork()
+net = Net()
 
 
 # Hyperparameters
-learning_rate = 0.01
-batch_size = 256
+learning_rate = 0.001
 epochs = 5
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 
-train_dataloader = DataLoader(training_data, batch_size=batch_size)
-test_dataloader = DataLoader(test_data, batch_size=batch_size)
-
-# Training
-error_w_7 = []
+error = []
 for t in range(epochs):
     print(f"Epoch {t+1}-----------------")
     # Use train_loop and test_loop functions
-    learning_rate = 0.1/(10*t+1)
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    train_loop(train_dataloader, model, loss_fn, optimizer, prin=True)
-    x = test_loop(test_dataloader, model, loss_fn)
-    error_w_7.append(x)
+    train_loop(trainloader, net, loss_fn, optimizer)
+    x = test_loop(testloader, net, loss_fn)
+    error.append(x)
 print("Done!")
-
-PATH = './cifar_net.pth'
-torch.save(model(), PATH)
