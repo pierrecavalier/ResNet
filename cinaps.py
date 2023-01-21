@@ -1,4 +1,4 @@
-import torch
+import torchs
 from torch import nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -6,6 +6,10 @@ from torchvision import datasets, transforms
 from torchvision.transforms import ToTensor, Lambda
 #from pytorch_model_summary import summary
 import numpy as np
+
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 training_data = datasets.CIFAR10(
     root="data",
@@ -247,7 +251,7 @@ def train_model():
                 correct += (predicted_class ==
                             labels_test).float().sum().item()
 
-        test_accuracy = correct / test_samples_num
+        test_accuracy = correct / tet_samples_num
         print('Test accuracy: {}'.format(test_accuracy))
 
         string = str(test_accuracy) + ", "
