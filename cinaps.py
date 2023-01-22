@@ -182,92 +182,85 @@ models_str = ["ResNet56A", "ResNet44A", "ResNet32A", "ResNet20A", "ResNet56B", "
 
 def train_model(model, model_name):
     EPOCHS = 10
+    loop_by_model = 9
+
     train_samples_num = 50000
     train_costs, val_costs = [], []
-
+    
     print(model_name)
 
-    # Training phase.
-    for epoch in range(EPOCHS):
-
-        train_running_loss = 0
-        correct_train = 0
-
-        for inputs, labels in train:
-
-            inputs.to(device)
-            labels.to(device)
-
-            """ for every mini-batch during the training phase, we typically want to explicitly set the gradients 
-            to zero before starting to do backpropragation """
-            optimizer.zero_grad()
-
-            # Start the forward pass
-            prediction = model(inputs)
-
-            loss = criterion(prediction, labels)
-
-            # do backpropagation and update weights with step()
-            loss.backward()
-            optimizer.step()
-
-            # print('outputs on which to apply torch.max ', prediction)
-            # find the maximum along the rows, use dim=1 to torch.max()
-            _, predicted_outputs = torch.max(prediction.data, 1)
-
-            # Update the running corrects
-            correct_train += (predicted_outputs == labels).float().sum().item()
-
-            ''' Compute batch loss
-            multiply each average batch loss with batch-length. 
-            The batch-length is inputs.size(0) which gives the number total images in each batch. 
-            Essentially I am un-averaging the previously calculated Loss '''
-            train_running_loss += (loss.data.item() * inputs.shape[0])
-
-        train_epoch_loss = train_running_loss / train_samples_num
-
-        train_costs.append(train_epoch_loss)
-
-        train_acc = correct_train / train_samples_num
-
-        info = "[Epoch {}/{}]: train-loss = {:0.6f} | train-acc = {:0.3f}"
-
-        test_samples_num = 10000
-        correct = 0
-
-        with torch.no_grad():
-            for inputs_test, labels_test in test:
-                # Make predictions.
-                prediction = model(inputs_test)
-
-                # Retrieve predictions indexes.
-                _, predicted_class = torch.max(prediction.data, 1)
-
-                # Compute number of correct predictions.
-                correct += (predicted_class ==
-                            labels_test).float().sum().item()
-
-        test_accuracy = correct / test_samples_num
-        print('Test accuracy: {}'.format(test_accuracy))
-
-        string = str(test_accuracy) + ", "
-        fichier = open("{}.txt".format(model_name), "w")
-        fichier.write(string)
-        fichier.close()
-        torch.save(model.state_dict(), './models/{}'.format(model_name))
+    model.to(device)
 
 
-        print(info.format(epoch+1, EPOCHS, train_epoch_loss, train_acc))
+    torch.save(model.state_dict(), './reset_model')
+
+    for loop in range(loop_by_model):
+
+        model.load_state_dict(torch.load('./reset_model'))
+        
+
+        accuracy_matrix = np.zeros((loop_by_model, EPOCHS))
 
 
+        # Training phase.
+        for epoch in range(EPOCHS):
+            for inputs, labels in train:
 
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+
+                """ for every mini-batch during the training phase, we typically want to explicitly set the gradients 
+                to zero before starting to do backpropragation """
+                optimizer.zero_grad()
+
+                # Start the forward pass
+                prediction = model(inputs)
+
+                loss = criterion(prediction, labels)
+
+                # do backpropagation and update weights with step()
+                loss.backward()
+                optimizer.step()
+
+            test_samples_num = 10000
+            correct = 0
+
+            with torch.no_grad():
+                for inputs_test, labels_test in test:
+                    
+                    inputs_test = inputs_test.to(device)
+                    labels_test = labels_test.to(device)
+                    
+                    # Make predictions.
+                    prediction = model(inputs_test)
+
+                    # Retrieve predictions indexes.
+                    _, predicted_class = torch.max(prediction.data, 1)
+
+                    # Compute number of correct predictions.
+                    correct += (predicted_class ==
+                                labels_test).float().sum().item()
+
+            test_accuracy = correct / test_samples_num
+
+            accuracy_matrix[loop,epoch] = test_accuracy
+
+
+    accuracy_mean_list = np.mean(accuracy_matrix, axis=1)
+    accuracy_std_list = np.std(accuracy_matrix, axis=1)
+    fichier = open("{}_mean_accuracy.txt".format(model_name), "a")
+    fichier.write(" ,".join(str(x) for x in accuracy_mean_list))
+    print('Accuracy mean : ', " ,".join(str(x) for x in accuracy_mean_list))
+    fichier.close()
+    fichier = open("{}_std_accuracy.txt".format(model_name), "a")
+    fichier.write(" ,".join(str(x) for x in accuracy_std_list))
+    fichier.close()
+
+    torch.save(model.state_dict(), './{}'.format(model_name))
     return train_costs
 
 
 for model, model_name in zip(models, models_str):
-
-    model.to(device)
-
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
