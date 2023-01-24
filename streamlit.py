@@ -3,10 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-st.write("My First Streamlit Web App")
-
-df = pd.DataFrame({"one": [1, 2, 3], "two": [4, 5, 6], "three": [7, 8, 9]})
-st.write(df)
 
 accuracy20 = [0.3769, 0.526, 0.6142, 0.6616,
               0.7067, 0.731, 0.741, 0.7539, 0.7586, 0.7631]
@@ -17,14 +13,32 @@ accuracy44 = [0.2635, 0.3393, 0.394, 0.4454,
 accuracy56 = [0.2424, 0.333, 0.356, 0.4101,
               0.4567, 0.5483, 0.5773, 0.6067, 0.6454, 0.6657]
 
+resnet_32 = [0.5179, 0.6923, 0.7398, 0.7806,
+             0.7856, 0.7957, 0.8014, 0.8209, 0.8194, 0.8271]
+resnet_20 = [0.5865, 0.7112, 0.7448, 0.7733,
+             0.7868, 0.8046, 0.8123, 0.8088, 0.8206, 0.801]
+resnet_44 = [0.537, 0.6854, 0.7362, 0.7777,
+             0.7914, 0.7962, 0.8129, 0.8241, 0.8188, 0.8152]
+resnet_56 = [0.4975, 0.6792, 0.7226, 0.7677,
+             0.7859, 0.8044, 0.81, 0.8243, 0.8216, 0.8262]
+
+resnet = [resnet_20, resnet_32, resnet_44, resnet_56]
+
 accuracyCNN = [accuracy20, accuracy32, accuracy44, accuracy56]
 
 fig = plt.figure(figsize=(16, 9))
 
-CNNrange = [0, 1, 2, 3]
-number = ["20", "32", "44", "56"]
+CNNrange = [20, 32, 44, 56]
 
 choice = st.select_slider("Choose the number of layer", options=CNNrange)
 
-string = number[choice] + "couches"
-st.line_chart(accuracyCNN[choice])
+
+fig = plt.figure()
+plt.plot(accuracyCNN[(choice-20)//12], label="CNN")
+plt.plot(resnet[(choice-20)//12], label="Resnet")
+plt.legend()
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+plt.title(
+    "Accuracy du modèle sur le jeu de données test en fonction du nombre d'epochs")
+st.pyplot(plt)
