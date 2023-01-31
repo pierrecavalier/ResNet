@@ -1,8 +1,22 @@
+from models import (
+    ResNet56A,
+    ResNet44A,
+    ResNet32A,
+    ResNet20A,
+    ResNet56B,
+    ResNet44B,
+    ResNet32B,
+    ResNet20B,
+    CNN56,
+    CNN44,
+    CNN32,
+    CNN20,
+)
 import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
+import torch
 
 accuracy20 = [0.3769, 0.526, 0.6142, 0.6616,
               0.7067, 0.731, 0.741, 0.7539, 0.7586, 0.7631]
@@ -26,6 +40,10 @@ resnet = [resnet_20, resnet_32, resnet_44, resnet_56]
 
 accuracyCNN = [accuracy20, accuracy32, accuracy44, accuracy56]
 
+
+# Plot graphique
+st.title("Residual learning")
+
 fig = plt.figure(figsize=(16, 9))
 
 CNNrange = [20, 32, 44, 56]
@@ -41,4 +59,61 @@ plt.xlabel("Epochs")
 plt.ylabel("Accuracy")
 plt.title(
     "Accuracy du modèle sur le jeu de données test en fonction du nombre d'epochs")
+st.pyplot(plt)
+
+# Number of parameters
+
+models = [["ResNet56A", ResNet56A(), "red"],
+          ["ResNet44A", ResNet44A(), "green"],
+          ["ResNet32A", ResNet32A(), "blue"],
+          ["ResNet20A", ResNet20A(), "purple"],
+          ["ResNet56B", ResNet56B(), "orange"],
+          ["ResNet44B", ResNet44B(), "yellow"],
+          ["ResNet32B", ResNet32B(), "brown"],
+          ["ResNet20B", ResNet20B(), "pink"],
+          ["CNN56", CNN56(), "black"],
+          ["CNN44", CNN44(), "cyan"],
+          ["CNN32", CNN32(), "gray"]]
+
+fig, ax = plt.subplots()
+
+space = 0
+space_y = 0
+center_y = 0
+max_rayon = 0
+
+for string, model, color in models:
+    path = './results/' + string
+    model.load_state_dict(torch.load(path))
+    model.eval()
+
+    number_param = sum(p.numel() for p in model.parameters())
+    rayon = np.sqrt(number_param/np.pi)
+    if rayon > max_rayon:
+        max_rayon = rayon
+
+    if string[0] == "C":
+        if center_y == 0:
+            center_y = -3*max_rayon
+
+        if space_y != 0:
+            space_y += 1.5*rayon
+
+        circle = plt.Circle((space_y, center_y), rayon,
+                            color=color, label=string)
+        space_y += 1.5*rayon
+
+    else:
+        if space != 0:
+            space += 1.5*rayon
+        circle = plt.Circle((space, 0), rayon, color=color, label=string)
+        space += 1.5*rayon
+    ax.add_artist(circle)
+    ax.legend(loc='best')
+
+plt.xlim(-2*rayon, 1.3*space + 2*rayon)
+plt.ylim(-5*max_rayon, 2*max_rayon)
+ax.set_aspect(1)
+
+
 st.pyplot(plt)
