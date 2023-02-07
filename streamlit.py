@@ -79,8 +79,8 @@ fig, ax = plt.subplots()
 
 space = 0
 space_y = 0
-center_y = 0
 max_rayon = 0
+k = 1
 
 for string, model, color in models:
     path = './results/' + string
@@ -89,30 +89,54 @@ for string, model, color in models:
 
     number_param = sum(p.numel() for p in model.parameters())
     rayon = np.sqrt(number_param/np.pi)
+
     if rayon > max_rayon:
         max_rayon = rayon
 
-    if string[0] == "C":
-        if center_y == 0:
-            center_y = -3*max_rayon
-
-        if space_y != 0:
-            space_y += 1.5*rayon
-
-        circle = plt.Circle((space_y, center_y), rayon,
-                            color=color, label=string)
-        space_y += 1.5*rayon
-
-    else:
+    if k <= 4:
         if space != 0:
             space += 1.5*rayon
+            
         circle = plt.Circle((space, 0), rayon, color=color, label=string)
         space += 1.5*rayon
+
+    if k > 4 and k <= 8:
+        center_y = -3*max_rayon
+
+        if k != 5:
+            space += 1.5*rayon
+
+        else:
+            space = 0
+
+        circle = plt.Circle((space, center_y), rayon,
+                            color=color, label=string)
+        space += 1.5*rayon
+
+    else:
+        center_y = -6*max_rayon
+
+        if k != 9:
+            space += 1.5*rayon
+
+        else:
+            space = 0
+
+        circle = plt.Circle((space, center_y), rayon,
+                            color=color, label=string)
+        space += 1.5*rayon
+
+    k += 1
     ax.add_artist(circle)
     ax.legend(loc='best')
 
-plt.xlim(-2*rayon, 1.3*space + 2*rayon)
-plt.ylim(-5*max_rayon, 2*max_rayon)
+#plt.xlim(-2*rayon, 1.3*space + 2*rayon)
+#plt.ylim(-7*max_rayon, 2*max_rayon)
+
+t = 20000
+plt.xlim(-t, t)
+plt.ylim(-t, t)
+
 ax.set_aspect(1)
 
 
