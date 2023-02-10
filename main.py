@@ -8,6 +8,7 @@ webbrowser.open_new_tab(path)
 
 
 from data import LoadCIFAR10
+
 train, test = LoadCIFAR10(batch_size=32)
 
 
