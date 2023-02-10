@@ -163,10 +163,7 @@ models_str = [
 ]
 for model, model_str in zip(models, models_str):
     model.load_state_dict(
-        torch.load(
-            "./results/{}".format(model_str)
-            + ("A" if model_str.startswith("ResNet") else "")
-        )
+        torch.load("./results/{}".format(model_str))
     )
     append = pd.DataFrame(
         [[model_str, sum(p.numel() for p in model.parameters())]],
