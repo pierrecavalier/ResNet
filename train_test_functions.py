@@ -41,7 +41,7 @@ def global_loop(model, model_name, train, test):
 
     for loop in range(loop_by_model):
 
-        model.load_state_dict(torch.load('./reset_model'))
+        model.load_state_dict(torch.load('./results/reset_model'))
         
 
         # Training phase.
