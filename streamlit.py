@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from train_test_functions import global_loop
 from torch import nn
 import torch
+import os
 
 st.set_page_config(layout="wide")
 page_bg_img = f"""
@@ -174,7 +175,6 @@ with col2:
 st.header("Creation of models")
 col1, col2 = st.columns(2)
 with col1:
-    st.write("partie de pierre")
     # Affichage des images et de la barre de sélection
     selected_model = st.slider(
         'Depth of the convolutionel network', min_value=8, max_value=20, value=14, step=6)
@@ -223,48 +223,55 @@ elif selected_model == 20 and model_type == 'CNN':
     st.image(model_images[1][2])
     model = CNN20()
     name = 'CNN20'
+st.write(sys.version)
+
+
+def train_model(model, name):
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters())
+    to_plot = []
+
+    EPOCHS = 10
+    for epoch in range(EPOCHS):
+        start_time = time.time()
+
+        training_acc, training_loss = training(
+            model, train, optimizer, criterion)
+        test_acc, test_loss = testing(model, test, criterion)
+
+        end_time = time.time()
+        diff_time = end_time - start_time
+
+        st.write("{} --- Epoch {}/{} --- train loss : {} | train acc : {} | test loss : {} | test acc {} | time spent {}s" .format(
+            model_name, epoch +
+            1, EPOCHS, np.round(training_loss, 2), np.round(training_acc, 2),
+            np.round(test_loss, 2), np.round(test_acc, 2), np.round(diff_time, 2)))
+
+        to_plot.append(test_acc)
+
+    np.savetxt("./streamlit_res/{}_acc.csv".format(name),
+               to_plot, delimiter=",")
+
+    st.plot(to_plot)
+    st.write("Nombre de paramètre {}".format(sum(p.numel()
+             for p in model.parameters() if p.requires_grad) / 1000))
 
 
 train, test = LoadCIFAR10_subset(batch_size=32, subset=5000)
 
-criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters())
-
-EPOCHS = 10
+st.button("train", on_click=train_model(model, name))
+st.button("Print every results", on_click=load_res())
 
 
-st.write("Version de Python : ", sys.version)
+def load_res():
+    for file_name in os.listdir(streamlit_res):
+        text_files.append(file_name)
 
-train, test = LoadCIFAR10_subset(batch_size=32, subset=5000)
+    fig, ax = plt.subplots()
 
-model = ResNet8()
-model_name = "ResNet8"
+    for text_file in text_files:
+        data = np.loadtxt(os.path.join(folder_path, text_file))
+        ax.plot(data, label=text_file)
 
-criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters())
-
-EPOCHS = 10
-
-to_plot = []
-
-for epoch in range(EPOCHS):
-    start_time = time.time()
-
-    training_acc, training_loss = training(model, train, optimizer, criterion)
-    test_acc, test_loss = testing(model, test, criterion)
-
-    end_time = time.time()
-    diff_time = end_time - start_time
-
-    st.write("{} --- Epoch {}/{} --- train loss : {} | train acc : {} | test loss : {} | test acc {} | time spent {}s" .format(
-        model_name, epoch +
-        1, EPOCHS, np.round(training_loss, 2), np.round(training_acc, 2),
-        np.round(test_loss, 2), np.round(test_acc, 2), np.round(diff_time, 2)))
-
-    to_plot.append(test_acc)
-
-plt.plot(to_plot)
-plt.show()
-
-
-st.write("partie de pierre")
+    ax.legend()
+    plt.show()
