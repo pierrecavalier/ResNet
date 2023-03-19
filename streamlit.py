@@ -5,6 +5,7 @@ import base64
 import requests
 import webbrowser
 import numpy as np
+import matplotlib.pyplot as plt
 from models import ResNet8, ResNet14, ResNet20, CNN8, CNN14, CNN20
 from data import LoadCIFAR10_subset
 from train_test_functions import training, testing
@@ -223,55 +224,74 @@ elif selected_model == 20 and model_type == 'CNN':
     st.image(model_images[1][2])
     model = CNN20()
     name = 'CNN20'
-st.write(sys.version)
 
 
 def train_model(model, name):
+    st.write("Training model")
+    progress_bar_container = st.empty()
+    progress_text_container = st.empty()
+
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters())
-    to_plot = []
+    acc = []
 
-    EPOCHS = 10
+    EPOCHS = 5
+    fig, ax = plt.subplots()
+
     for epoch in range(EPOCHS):
-        start_time = time.time()
 
         training_acc, training_loss = training(
             model, train, optimizer, criterion)
         test_acc, test_loss = testing(model, test, criterion)
 
-        end_time = time.time()
-        diff_time = end_time - start_time
+        progress_percent = (epoch + 1) / EPOCHS
+        progress_bar_container.progress(progress_percent)
+        progress_text_container.write(f"{int(100*progress_percent)}%")
+        time.sleep(1)
 
-        st.write("{} --- Epoch {}/{} --- train loss : {} | train acc : {} | test loss : {} | test acc {} | time spent {}s" .format(
-            model_name, epoch +
-            1, EPOCHS, np.round(training_loss, 2), np.round(training_acc, 2),
-            np.round(test_loss, 2), np.round(test_acc, 2), np.round(diff_time, 2)))
+        acc.append(test_acc)
 
-        to_plot.append(test_acc)
+    st.write("Modèle entraîné avec succès !")
 
     np.savetxt("./streamlit_res/{}_acc.csv".format(name),
-               to_plot, delimiter=",")
+               acc, delimiter=",")
 
-    st.plot(to_plot)
+    ax.set_title("Accuracy according to the epochs")
+    ax.set_xlabel("Epochs")
+    ax.set_ylabel("Accuracy")
+    ax.plot(acc)
+
+    fig.set_size_inches(8, 6)
+
+    st.pyplot(fig)
+
     st.write("Nombre de paramètre {}".format(sum(p.numel()
              for p in model.parameters() if p.requires_grad) / 1000))
 
 
-train, test = LoadCIFAR10_subset(batch_size=32, subset=5000)
-
-st.button("train", on_click=train_model(model, name))
-st.button("Print every results", on_click=load_res())
-
-
 def load_res():
-    for file_name in os.listdir(streamlit_res):
+    text_files = []
+    for file_name in os.listdir("streamlit_res"):
         text_files.append(file_name)
 
     fig, ax = plt.subplots()
 
     for text_file in text_files:
-        data = np.loadtxt(os.path.join(folder_path, text_file))
+        data = np.loadtxt(os.path.join("streamlit_res", text_file))
         ax.plot(data, label=text_file)
 
-    ax.legend()
-    plt.show()
+        ax.legend()
+        ax.set_title("Accuracy according to the epochs")
+        ax.set_xlabel("Epochs")
+        ax.set_ylabel("Accuracy")
+
+    st.pyplot(fig)
+
+
+train, test = LoadCIFAR10_subset(batch_size=32, subset=5000)
+
+if st.button("train"):
+    train_model(model, name)
+
+if st.button("Print every results"):
+    load_res()
