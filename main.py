@@ -1,5 +1,4 @@
-from data import LoadCIFAR10
-train, test = LoadCIFAR10(batch_size=32)
+
 
 
 """
@@ -11,7 +10,8 @@ models_str = ["ResNet56A", "ResNet44A", "ResNet32A", "ResNet20A", "ResNet56B", "
 
 from train_test_functions import global_loop
 for model, model_name in zip(models, models_str):
-    global_loop(model, model_name, train, test)
+    if model_name == "CNN20":
+        global_loop(model, model_name, train, test)
 
 
 from models import TorchResNet50, TorchResNet34, TorchResNet18
