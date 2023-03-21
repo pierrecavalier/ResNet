@@ -74,3 +74,23 @@ def TorchResNet18():
     model = m.resnet18(pretrained=False)
     model.fc = nn.LazyLinear(10)
     return model
+
+
+def ResNet8():
+    return ResNetNN(block_type=ConvBlock, num_blocks=[1, 1, 1], option='B', ResNet=True)
+
+
+def ResNet14():
+    return ResNetNN(block_type=ConvBlock, num_blocks=[2, 2, 2], option='B', ResNet=True)
+
+
+def ResNet20():
+    return ResNetNN(block_type=ConvBlock, num_blocks=[3, 3, 3], option='B', ResNet=True)
+
+
+def CNN8():
+    return ResNetNN(block_type=ConvBlock, num_blocks=[1, 1, 1], option='A', ResNet=False)
+
+
+def CNN14():
+    return ResNetNN(block_type=ConvBlock, num_blocks=[2, 2, 2], option='A', ResNet=False)

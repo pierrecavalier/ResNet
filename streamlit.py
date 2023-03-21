@@ -3,7 +3,8 @@ import base64
 import requests
 import webbrowser
 from streamlit_timeline import timeline
-import sys
+import os
+import matplotlib.pyplot as plt
 import time
 import streamlit as st
 import numpy as np
@@ -194,28 +195,35 @@ if st.button("View model selected"):
     show_sidebar = not show_sidebar
 
 # Affichage de l'image sélectionnée
-if selected_model == 8 and model_type == "ResNet" and show_sidebar:
-    st.sidebar.image(model_images[0][0])
+if selected_model == 8 and model_type == "ResNet":
+    if show_sidebar:
+        st.sidebar.image(model_images[0][0])
     model = ResNet8()
     name = "ResNet8"
-elif selected_model == 14 and model_type == "ResNet" and show_sidebar:
-    st.sidebar.image(model_images[0][1])
+
+elif selected_model == 14 and model_type == "ResNet":
+    if show_sidebar:
+        st.sidebar.image(model_images[0][1])
     model = ResNet14()
     name = "ResNet14"
-elif selected_model == 20 and model_type == "ResNet" and show_sidebar:
-    st.sidebar.image(model_images[0][2])
+elif selected_model == 20 and model_type == "ResNet":
+    if show_sidebar:
+        st.sidebar.image(model_images[0][2])
     model = ResNet20()
     name = "ResNet20"
-elif selected_model == 8 and model_type == "CNN" and show_sidebar:
-    st.sidebar.image(model_images[1][0])
+elif selected_model == 8 and model_type == "CNN":
+    if show_sidebar:
+        st.sidebar.image(model_images[1][0])
     model = CNN8()
     name = "CNN8"
-elif selected_model == 14 and model_type == "CNN" and show_sidebar:
-    st.sidebar.image(model_images[1][1])
+elif selected_model == 14 and model_type == "CNN":
+    if show_sidebar:
+        st.sidebar.image(model_images[1][1])
     model = CNN14()
     name = "CNN14"
-elif selected_model == 20 and model_type == "CNN" and show_sidebar:
-    st.sidebar.image(model_images[1][2])
+elif selected_model == 20 and model_type == "CNN":
+    if show_sidebar:
+        st.sidebar.image(model_images[1][2])
     model = CNN20()
     name = "CNN20"
 
@@ -284,8 +292,8 @@ def load_res():
 
 train, test = LoadCIFAR10_subset(batch_size=32, subset=5000)
 
-if st.button("train"):
+if st.button("Train model"):
     train_model(model, name)
 
-if st.button("Print every results"):
+if st.button("Print accuracy of every model trained so far"):
     load_res()
