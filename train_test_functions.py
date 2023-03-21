@@ -40,7 +40,7 @@ def global_loop(model, model_name, train, test):
 
     for loop in range(loop_by_model):
 
-        model.load_state_dict(torch.load('./reset_model'))
+        model.load_state_dict(torch.load("./results/reset_model"))
 
         # Training phase.
         for epoch in range(EPOCHS):
@@ -143,10 +143,9 @@ def testing(model, test, criterion):
             _, predicted_class = torch.max(prediction.data, 1)
 
             # Compute number of correct predictions.
-            correct += (predicted_class ==
-                        labels_test).float().sum().item()
+            correct += (predicted_class == labels_test).float().sum().item()
 
-            test_running_loss += (loss.data.item() * inputs_test.shape[0])
+            test_running_loss += loss.data.item() * inputs_test.shape[0]
 
     return correct / len(test.dataset), test_running_loss / len(test.dataset)
 
