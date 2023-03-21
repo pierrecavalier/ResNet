@@ -191,7 +191,7 @@ with col2:
 show_sidebar = False
 
 # Ajouter un bouton pour afficher ou masquer la barre latérale
-if st.button("View model selected"):
+if st.button("View model"):
     show_sidebar = not show_sidebar
 
 # Affichage de l'image sélectionnée
