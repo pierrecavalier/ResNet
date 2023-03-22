@@ -69,8 +69,7 @@ models_str = [
 
 
 for model, model_name in zip(models, models_str):
-    if model_name == "CNN20":
-        global_loop(model, model_name, train, test)
+    global_loop(model, model_name, train, test)
 
 
 models = [TorchResNet50(), TorchResNet34(), TorchResNet18()]
