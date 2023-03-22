@@ -6,7 +6,7 @@ import torch
 from torch import nn
 import numpy as np
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def global_loop(model, model_name, train, test):
@@ -33,7 +33,7 @@ def global_loop(model, model_name, train, test):
 
     model.to(device)
 
-    torch.save(model.state_dict(), './reset_model')
+    torch.save(model.state_dict(), "./results/reset_model")
 
     accuracy_matrix = np.zeros((loop_by_model, EPOCHS))
     loss_matrix = np.zeros((loop_by_model, EPOCHS))
@@ -45,21 +45,29 @@ def global_loop(model, model_name, train, test):
         # Training phase.
         for epoch in range(EPOCHS):
 
-            training_acc, training_loss = training(
-                model, train, optimizer, criterion)
+            training_acc, training_loss = training(model, train, optimizer, criterion)
             test_acc, test_loss = testing(model, test, criterion)
 
-            print("{} --- Epoch{}/{} --- train loss : {} | train acc : {} | test loss : {} | test acc {}".format(
-                model_name, epoch+1, EPOCHS, training_loss, training_acc, test_loss, test_acc))
+            print(
+                "{} --- Epoch{}/{} --- train loss : {} | train acc : {} | test loss : {} | test acc {}".format(
+                    model_name,
+                    epoch + 1,
+                    EPOCHS,
+                    training_loss,
+                    training_acc,
+                    test_loss,
+                    test_acc,
+                )
+            )
 
             accuracy_matrix[loop, epoch] = test_acc
             loss_matrix[loop, epoch] = test_loss
 
-    np.savetxt("./results/{}_acc.csv".format(model_name),
-               accuracy_matrix, delimiter=",")
-    np.savetxt("./results/{}_loss.csv".format(model_name),
-               loss_matrix, delimiter=",")
-    torch.save(model.state_dict(), './results/{}'.format(model_name))
+    np.savetxt(
+        "./results/{}_acc.csv".format(model_name), accuracy_matrix, delimiter=","
+    )
+    np.savetxt("./results/{}_loss.csv".format(model_name), loss_matrix, delimiter=",")
+    torch.save(model.state_dict(), "./results/{}".format(model_name))
 
 
 def training(model, train, optimizer, criterion):
@@ -104,9 +112,9 @@ def training(model, train, optimizer, criterion):
         # update the running corrects
         correct_train += (predicted_outputs == labels).float().sum().item()
 
-        train_running_loss += (loss.data.item() * inputs.shape[0])
+        train_running_loss += loss.data.item() * inputs.shape[0]
 
-    return correct_train / len(train.dataset),  train_running_loss / len(train.dataset)
+    return correct_train / len(train.dataset), train_running_loss / len(train.dataset)
 
 
 def testing(model, test, criterion):
@@ -177,18 +185,26 @@ def torch_loop(model, model_name, train, test):
     # Training phase.
     for epoch in range(EPOCHS):
 
-        training_acc, training_loss = training(
-            model, train, optimizer, criterion)
+        training_acc, training_loss = training(model, train, optimizer, criterion)
         test_acc, test_loss = testing(model, test, criterion)
 
-        print("{} --- Epoch{}/{} --- train loss : {} | train acc : {} | test loss : {} | test acc {}".format(
-            model_name, epoch+1, EPOCHS, training_loss, training_acc, test_loss, test_acc))
+        print(
+            "{} --- Epoch{}/{} --- train loss : {} | train acc : {} | test loss : {} | test acc {}".format(
+                model_name,
+                epoch + 1,
+                EPOCHS,
+                training_loss,
+                training_acc,
+                test_loss,
+                test_acc,
+            )
+        )
 
         accuracy_matrix[epoch] = test_acc
         loss_matrix[epoch] = test_loss
 
-    np.savetxt("./results/{}_acc.csv".format(model_name),
-               accuracy_matrix, delimiter=",")
-    np.savetxt("./results/{}_loss.csv".format(model_name),
-               loss_matrix, delimiter=",")
-    torch.save(model.state_dict(), './results/{}'.format(model_name))
+    np.savetxt(
+        "./results/{}_acc.csv".format(model_name), accuracy_matrix, delimiter=","
+    )
+    np.savetxt("./results/{}_loss.csv".format(model_name), loss_matrix, delimiter=",")
+    torch.save(model.state_dict(), "./results/{}".format(model_name))
