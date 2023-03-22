@@ -20,7 +20,7 @@ st.set_page_config(layout="wide")
 page_bg_img = f"""
 <style>
 [data-testid="stAppViewContainer"] > .main {{
-background-image: url("https://imgs.search.brave.com/sIAMBRYC-DqOH7eaAJmlYH93iHsUQ7DhyP5xP_q7aHo/rs:fit:1071:897:1/g:ce/aHR0cHM6Ly92aWdu/ZXR0ZS53aWtpYS5u/b2Nvb2tpZS5uZXQv/dmlsbGFub3MtZGVs/LWNpbmUtZGUtdGVy/cm9yL2ltYWdlcy8z/LzNjL1NtaWxleV8x/LmpwZy9yZXZpc2lv/bi9sYXRlc3Q_Y2I9/MjAxODAzMzAyMzUw/NDImcGF0aC1wcmVm/aXg9ZXM");
+background-image: url("https://imgs.search.brave.com/NM8CWFNYWF4jyTq4erhz0lrU0ZXqu6sOHCYC3aCvR6w/rs:fit:1200:1200:1/g:ce/aHR0cHM6Ly93YWxs/dXAubmV0L3dwLWNv/bnRlbnQvdXBsb2Fk/cy8yMDE2LzAzLzA5/LzM0MzY2NC1kaWdp/dGFsX2FydC1hYnN0/cmFjdC1taW5pbWFs/aXNtLWJsYWNrLTNE/LWxpbmVzLXNpbXBs/ZS5qcGc");
 background-size: 100%;
 background-position: top left;
 background-repeat: repeat;
@@ -169,8 +169,7 @@ with col1:
         value=14,
         step=6,
     )
-    model_type = st.selectbox(
-        "Choose the type of your model", ("ResNet", "CNN"))
+    model_type = st.selectbox("Choose the type of your model", ("ResNet", "CNN"))
 
 
 with col2:
@@ -242,8 +241,7 @@ def train_model(model, name):
 
     for epoch in range(EPOCHS):
 
-        training_acc, training_loss = training(
-            model, train, optimizer, criterion)
+        training_acc, training_loss = training(model, train, optimizer, criterion)
         test_acc, test_loss = testing(model, test, criterion)
 
         progress_percent = (epoch + 1) / EPOCHS
@@ -255,8 +253,7 @@ def train_model(model, name):
 
     st.write("Modèle entraîné avec succès !")
 
-    np.savetxt("./streamlit_res/{}_acc.csv".format(name),
-               acc, delimiter=",")
+    np.savetxt("./streamlit_res/{}_acc.csv".format(name), acc, delimiter=",")
 
     ax.set_title("Accuracy according to the epochs")
     ax.set_xlabel("Epochs")
@@ -267,8 +264,11 @@ def train_model(model, name):
 
     st.pyplot(fig)
 
-    st.write("Nombre de paramètre {}".format(sum(p.numel()
-             for p in model.parameters() if p.requires_grad) / 1000))
+    st.write(
+        "Nombre de paramètre {}".format(
+            sum(p.numel() for p in model.parameters() if p.requires_grad) / 1000
+        )
+    )
 
 
 def load_res():
