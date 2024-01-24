@@ -17,7 +17,7 @@ We have implemented residual networks with a number of layers ranging from ten t
 </p>
 
 
-## Use
+## Usage
 
 
 Use "streamlit run streamlit.py" to run the website.
